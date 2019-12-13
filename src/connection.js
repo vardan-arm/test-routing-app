@@ -7,6 +7,8 @@ const host = 'localhost';
 // const port = 15672;
 
 const port = 15675;
+// const port = 1883;
+
 // const port = Number(window.location.port); // from the example at https://www.eclipse.org/paho/clients/js/
 // const port = 65312;
 // console.log('///', window.location.port);
@@ -47,8 +49,17 @@ console.log({conn1})
 const MQTTConnect = () => {
   console.log(`connecting to ${host} ${port}`);
   // mqtt = new PahoMQTT.Client(host, port, 'clientjs');
-  // mqtt = new PahoMQTT.Client(host, port, `cligentjs`);
-  mqtt = new PahoMQTT.Client(host, port, `127.0.0.1`);
+  // mqtt = new PahoMQTT.Client(host, port, `clientjs`);
+
+  // mqtt = new PahoMQTT.Client(host, port, `127.0.0.1`);
+  mqtt = new PahoMQTT.Client(host, port, '/ws', `myclientid_${parseInt(Math.random() * 100, 10)}`); // from example at https://www.rabbitmq.com/web-mqtt.html#usage
+
+  mqtt.onConnectionLost = function (responseObject) {
+    console.log("CONNECTION LOST - " + responseObject.errorMessage);
+  };
+  mqtt.onMessageArrived = function (message) {
+    console.log("RECEIVE ON " + message.destinationName + " PAYLOAD " + message.payloadString);
+  };
 
   const options = {
     // comment these 2 if they are not required
