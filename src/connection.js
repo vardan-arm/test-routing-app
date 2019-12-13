@@ -22,7 +22,10 @@ const RENAME_THIS_LATER = '';
 
 const onConnect = () => {
   console.log('Connected');
-  // mqtt.subscribe('sensor1'); // open this later
+  // mqtt.subscribe('/topic/test', {qos: 1});
+
+  mqtt.subscribe('first-queue', {qos: 1}); // if we provide the first argument as an empty string, our app will receive the `hellooo, world` message below
+
   let message = new PahoMQTT.Message('hellooo, world');
   message.destinationName = RENAME_THIS_LATER;
   mqtt.send(message);
