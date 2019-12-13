@@ -2,6 +2,9 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 
+import './components/rabbit-mq-receiver.component';
+import './connection';
+
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 
 const Home = () => (
