@@ -2,59 +2,31 @@ import PahoMQTT from 'paho-mqtt';
 
 let mqtt;
 let reconnectTimeout = 2000;
-const host = 'localhost';
-// const port = 9001;
-// const port = 15672;
-
+const host = 'localhost'; // change this to '127.0.0.1' in order to have it working in IE // https://stackoverflow.com/questions/47471024/websocket-on-loopback-cross-zone-connection-not-allowed-error-on-ms-edge
 const port = 15675;
-// const port = 1883;
 
-// const port = Number(window.location.port); // from the example at https://www.eclipse.org/paho/clients/js/
-// const port = 65312;
-// console.log('///', window.location.port);
-
-// const RENAME_THIS_LATER = 'sensor1';
-
-// const RENAME_THIS_LATER = 'first-queue';
-// const RENAME_THIS_LATER = 'testqueue';
-const RENAME_THIS_LATER = '';
+const ROUTING_KEY = 'some_key';
 
 
 const onConnect = () => {
   console.log('Connected');
-  // mqtt.subscribe('/topic/test', {qos: 1});
 
-  mqtt.subscribe('first-queue', {qos: 1}); // if we provide the first argument as an empty string, our app will receive the `hellooo, world` message below
+  // Frontend connects to "amq.topic" exchange. It creates a queue named, for example, "mqtt-subscription-myclientid_1qos1" under that exchange.
+  // Backend will send messages to that exchange with corresponding routing key ("some_key" in our example), which will be caught by frontend.
+  // More details here - https://stackoverflow.com/questions/27228957/how-subscribe-in-an-rabbitmq-queue-with-mqtt-paho/27256656
+  mqtt.subscribe(ROUTING_KEY, {qos: 1});
 
   let message = new PahoMQTT.Message('hellooo, world');
-  message.destinationName = RENAME_THIS_LATER;
+  message.destinationName = ROUTING_KEY;
+
   mqtt.send(message);
 };
 
 const onFailure = err => console.warn('ACHTUNG!!! Connection failed:', err);
 
-
-
-
-/*
-
-// const conn1 = new window.WebSocket('ws://localhost:15675/mqtt');
-// const conn1 = new window.WebSocket('ws://localhost:9001/mqtt');
-const conn1 = new window.WebSocket('ws://localhost:15675/mqtt');
-// const conn1 = new window.WebSocket('ws://localhost:15672/mqtt');
-console.log({conn1})
-*/
-
-
-
-
-
 const MQTTConnect = () => {
   console.log(`connecting to ${host} ${port}`);
-  // mqtt = new PahoMQTT.Client(host, port, 'clientjs');
-  // mqtt = new PahoMQTT.Client(host, port, `clientjs`);
 
-  // mqtt = new PahoMQTT.Client(host, port, `127.0.0.1`);
   mqtt = new PahoMQTT.Client(host, port, '/ws', `myclientid_${parseInt(Math.random() * 100, 10)}`); // from example at https://www.rabbitmq.com/web-mqtt.html#usage
 
   mqtt.onConnectionLost = function (responseObject) {
@@ -71,7 +43,8 @@ const MQTTConnect = () => {
     // userName: 'test-user',
     // password: 'password',
 
-    timeout: 3,
+    // timeout: 5,
+    // keepAliveInterval: 1,
     onSuccess: onConnect,
     onFailure
   };
@@ -81,61 +54,3 @@ const MQTTConnect = () => {
 
 
 MQTTConnect();
-
-
-
-
-/*
-const wsbroker = window.location.hostname;  // mqtt websocket enabled broker
-// const wsbroker = window.location.host;  // mqtt websocket enabled broker
-// const wsport = 15675; // port for above
-const wsport = 15672; // port for above
-// const wsport = 1883; // port for above
-console.log({wsbroker});
-
-
-// Create a client instance
-const client = new PahoMQTT.Client(wsbroker, Number(wsport), "clientId");
-
-
-console.log('---', window.location.host, window.location.hostname)
-// called when the client connects
-const onConnect = () => {
-  // Once a connection has been made, make a subscription and send a message.
-  console.log("onConnect");
-  // client.subscribe("World");
-  // client.subscribe("first-queue");
-  // client.subscribe("first-queue");
-  // client.subscribe("amq.gen--ZBrMQS7ckdRZJpn4hGs5A");
-  client.subscribe(''); // leaving this empty, so last declared on this channel queue name will be used (https://stackoverflow.com/a/22197339/2504429)
-  const message = new PahoMQTT.Message("Hello");
-  message.destinationName = "World";
-  client.send(message);
-}
-
-// called when connection fails
-const onFailure = err => console.warn('Connectino failed:', err);
-
-// called when the client loses its connection
-function onConnectionLost(responseObject) {
-  if (responseObject.errorCode !== 0) {
-    console.log("onConnectionLost:" + responseObject.errorMessage);
-  }
-}
-
-// set callback handlers
-client.onConnectionLost = onConnectionLost;
-client.onMessageArrived = onMessageArrived;
-
-// connect the client
-client.connect({
-  onSuccess: onConnect,
-  onFailure
-});
-
-
-// called when a message arrives
-function onMessageArrived(message) {
-  console.log("onMessageArrived:" + message.payloadString);
-}
-*/
